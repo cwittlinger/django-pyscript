@@ -6,6 +6,15 @@ __pycache__/
 # C extensions
 *.so
 
+# VSCode Config File
+.vscode/
+
+# Media and Staticfiles
+media/
+mediafiles/
+static/
+staticfiles/
+
 # Distribution / packaging
 .Python
 build/
