@@ -1,14 +1,20 @@
-import importlib.abc, importlib.util
-from importlib.util import spec_from_loader, module_from_spec
+import importlib.abc
+import importlib.util
 import inspect
+from contextlib import suppress
+from importlib.util import module_from_spec, spec_from_loader
 
 from django.db.models.fields.files import FieldFile
-from contextlib import suppress
 
 from .loaders import StringLoader
 
 
 class PyScriptFieldFile(FieldFile):
+    def __init__(self, instance, field, name):
+        super().__init__(instance, field, name)
+        self._module, self._callable = self.import_script()
+        self._parameters = getattr(self.instance, self.field.parameter_field) if self.field.parameter_field else {}
+
     def import_script(self):
         # Imports the script and returns the module and the module's callable
         spec = spec_from_loader(self.name.split(".")[0], StringLoader(self.file.read()))
@@ -19,25 +25,28 @@ class PyScriptFieldFile(FieldFile):
     def run_script(self, **injected_parameters):
         # Runs the script and injects the parameters, in case there any from the parameter field
         # As well as the paramters passed in through the injected_keyworks arguments
-        module, method = self.import_script()
+        injected_parameters.update(self.get_casted_parameters())
+        return self._callable(**injected_parameters)
 
-        if self.field.parameter_field:
-            injected_parameters.update(getattr(self.instance, self.field.parameter_field))
+    def get_casted_parameters(self):
+        # Casts the parameters into the datatypes provided in the script file.
+        # If a datatype is not provided, then it is provided as a string
+        signature = inspect.signature(self._callable)
+        parameters = {}
 
-        return method(**injected_parameters)
-
-    def cast_parameters(self, signature):
-        parameters = getattr(self.instance, self.field.parameter_field)
-
-        for parameter_key, parameter in signature.parameters.items():
+        for k, v in self._parameters.items():
+            parameter = signature.parameters[k]
+            value = v
             if parameter.annotation:
-                parameters[parameter_key] = parameter.annotation(parameters[parameter_key])
+                value = parameter.annotation(value)
+            parameters[k] = value
+
         return parameters
 
-    def get_parameters(self):
+    def extract_parameters(self):
         # Gets the parameters from the script's callable and passes them into the fields parameter field
         # Removes the parameters that are in the injected_paramters list, because they will be added to the script in runtime
-        signature = inspect.signature(self.import_script()[1])
+        signature = inspect.signature(self._callable)
         parameters = signature.parameters
 
         parameter_field = getattr(self.instance, self.field.parameter_field)

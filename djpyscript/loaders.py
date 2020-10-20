@@ -1,4 +1,4 @@
-import importlib.abc.SourceLoader
+import importlib.abc
 
 
 class StringLoader(importlib.abc.SourceLoader):
