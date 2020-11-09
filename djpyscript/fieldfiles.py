@@ -21,7 +21,7 @@ class PyScriptFieldFile(FieldFile):
         if hasattr(self, "_module") and hasattr(self, "_callable") and hasattr(self, "_parameters"):
             return
 
-        with suppress(FileNotFoundError):
+        with suppress(FileNotFoundError, ValueError):
             self._module, self._callable = self.import_script()
             self._parameters = getattr(self.instance, self.field.parameter_field) if self.field.parameter_field else {}
 
