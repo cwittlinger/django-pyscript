@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-pyscript"
-version = "0.1.0"
+version = "0.9.2"
 description = "This package aims to provide a django file field that can store .py files and executes them."
 authors = ["Christopher Wittlinger <c.wittlinger@intellineers.com>"]
 
@@ -11,7 +11,6 @@ packages = [
 [tool.poetry.dependencies]
 python = "3.8.*"
 django = "3.*"
-requests = "2.24.*"
 
 [tool.poetry.dev-dependencies]
 mkdocs = "1.1.*"
