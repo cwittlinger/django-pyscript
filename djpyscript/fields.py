@@ -6,11 +6,10 @@ from .fieldfiles import PyScriptFieldFile
 
 
 class PyScriptField(FileField):
-    """ Custom FileField that can store a python script file and executes it by leveraging a custom FieldFile 
-    """
+    """Custom FileField that can store a python script file and executes it by leveraging a custom FieldFile"""
     attr_class = PyScriptFieldFile
 
-    def __init__(self, injected_parameters: List[str] = None, parameter_field:str = None, *args, **kwargs):
+    def __init__(self, injected_parameters: List[str] = None, parameter_field: str = None, *args, **kwargs):
         if injected_parameters is None:
             injected_parameters = []
 
